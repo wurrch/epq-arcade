@@ -208,6 +208,31 @@ namespace Controller
         }
         static void AnalogueAll()
         {
+            SerialPort arduinoRaw = new SerialPort();
+            arduinoRaw.PortName = "COM3";
+            arduinoRaw.BaudRate = 9600;
+            try
+            {
+                arduinoRaw.Open();
+            }
+            catch
+            {
+                Console.WriteLine("Error opening arduino port, is another process using it?");
+                Main(null);
+            }
+
+            var client = new ViGEmClient();
+            var virtualX360 = client.CreateXbox360Controller();
+
+            virtualX360.Connect();
+            virtualX360.SetAxisValue(Xbox360Axis.LeftThumbX, 0);
+
+            string arduinoRawLine;
+            string[] arduinoRawString = new string[9];
+            int[] arduinoRawInt = new int[9];
+            int errorCount = 0;
+            short mappedWheelValue = 0;
+
 
         }
         public static int Map(int value, int in_min, int in_max, int out_min, int out_max)
