@@ -15,7 +15,7 @@ namespace Controller
         {
             int menuOption = 0;
 
-            Console.WriteLine("Please select an option:");
+            Console.WriteLine("Please select an option: BRUH");
             Console.WriteLine("1 - Only the Wheel as Analogue Input (All Pedals are on/off, Games that use buttons for moving)");
             Console.WriteLine("2 - Wheel, Accelerator and Break as Analogue Input (Clutch is on/off, Games that use triggers for moving)");
             Console.WriteLine("3 - Exit");
