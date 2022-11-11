@@ -248,13 +248,134 @@ namespace Controller
             virtualX360.Connect();
             virtualX360.SetAxisValue(Xbox360Axis.LeftThumbX, 0);
 
+            Thread calibrationThread = new Thread(() => CalibrationSub(virtualX360));
+            calibrationThread.Start();
+
             string arduinoRawLine;
             string[] arduinoRawString = new string[9];
             int[] arduinoRawInt = new int[9];
             int errorCount = 0;
             short mappedWheelValue = 0;
+            byte mappedBreakValue = 0;
+            byte mappedAcceleratorValue = 0;
 
+            while (true)
+            {
+                try
+                {
+                    // 'Primary Button','Secondary Button','Joystick X','Joystick Y','Joystick Button','Clutch','Break','Accelerator','Wheel Angle'
+                    arduinoRawLine = arduinoRaw.ReadLine();
+                    arduinoRawString = arduinoRawLine.Split(',');
+                    arduinoRawInt = Array.ConvertAll(arduinoRawString, s => int.Parse(s));
 
+                    // Primary Button = X Button
+                    if (arduinoRawInt[0] == 0)
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.X, true);
+                    }
+                    else
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.X, false);
+                    }
+
+                    // Secondary Button = Y Button
+                    if (arduinoRawInt[1] == 0)
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.Y, true);
+                    }
+                    else
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.Y, false);
+                    }
+
+                    // Joystick X high = DPad Right
+                    if (arduinoRawInt[2] >= 800)
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.Right, true);
+                        virtualX360.SetButtonState(Xbox360Button.Left, false);
+                    }
+                    else if (arduinoRawInt[2] <= 300) // Joystick X low = DPad Left
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.Left, true);
+                        virtualX360.SetButtonState(Xbox360Button.Right, false);
+                    }
+                    else // Joystick X middle = Neither
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.Left, false);
+                        virtualX360.SetButtonState(Xbox360Button.Right, false);
+                    }
+
+                    // Joystick Y high = DPad Up
+                    if (arduinoRawInt[3] >= 800)
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.Up, true);
+                        virtualX360.SetButtonState(Xbox360Button.Down, false);
+                    }
+                    else if (arduinoRawInt[3] <= 300) // Joystick Y low = DPad Down
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.Down, true);
+                        virtualX360.SetButtonState(Xbox360Button.Up, false);
+                    }
+                    else // Joystick Y middle = Neither
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.Down, false);
+                        virtualX360.SetButtonState(Xbox360Button.Up, false);
+                    }
+
+                    // Joystick Button = Left Bumper, Right Bumper and Left Thumbstick (TURNS ON LAN MODE)
+                    if (arduinoRawInt[4] == 0)
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.LeftShoulder, true);
+                        virtualX360.SetButtonState(Xbox360Button.RightShoulder, true);
+                        virtualX360.SetButtonState(Xbox360Button.LeftThumb, true);
+                    }
+                    else
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.LeftShoulder, false);
+                        virtualX360.SetButtonState(Xbox360Button.RightShoulder, false);
+                        virtualX360.SetButtonState(Xbox360Button.LeftThumb, false);
+                    }
+
+                    // Clutch = Right Bumper    If the clutch value is greater than or equal to 800 then pull the right bumper
+                    if (arduinoRawInt[5] >= 800)
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.RightShoulder, true);
+                    }
+                    else
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.RightShoulder, false);
+                    }
+
+                    // Break = Left Trigger
+                    mappedBreakValue = Convert.ToByte(Map(arduinoRawInt[6], 0, 1023, 0, 255));
+                    virtualX360.SetSliderValue(Xbox360Slider.LeftTrigger, mappedBreakValue);
+
+                    // Accelerator = Right Trigger
+                    mappedAcceleratorValue = Convert.ToByte(Map(arduinoRawInt[7], 0, 1023, 0, 255));
+                    virtualX360.SetSliderValue(Xbox360Slider.RightTrigger, mappedAcceleratorValue);
+
+                    // Wheel = Left Thumbstick X Axis
+                    mappedWheelValue = Convert.ToInt16(Map(arduinoRawInt[8], 0, 1023, -32768, 32767));
+                    virtualX360.SetAxisValue(Xbox360Axis.LeftThumbX, mappedWheelValue);
+
+                    // Debugging
+                    Console.SetCursorPosition(0, 0);
+                    Console.WriteLine("Error Count {0}      ", errorCount);
+                    Console.WriteLine("Primary Button {0}      ", arduinoRawInt[0]);
+                    Console.WriteLine("Secondary Button {0}      ", arduinoRawInt[1]);
+                    Console.WriteLine("Joystick X {0}      ", arduinoRawInt[2]);
+                    Console.WriteLine("Joystick Y {0}      ", arduinoRawInt[3]);
+                    Console.WriteLine("Joystick Button {0}      ", arduinoRawInt[4]);
+                    Console.WriteLine("Clutch Angle {0}      ", arduinoRawInt[5]);
+                    Console.WriteLine("Break Angle {0}      ", arduinoRawInt[6]);
+                    Console.WriteLine("Accelerator Angle {0}      ", arduinoRawInt[7]);
+                    Console.WriteLine("Wheel Angle {0}      ", arduinoRawInt[8]);
+                }
+                catch
+                {
+                    errorCount++;
+                }
+            }
         }
         public static int Map(int value, int in_min, int in_max, int out_min, int out_max)
         {
