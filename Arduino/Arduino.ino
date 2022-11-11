@@ -11,9 +11,9 @@ void loop() {
   Serial.print(",");
   Serial.print(digitalRead(9)); // Secondary Button
   Serial.print(",");
-  Serial.print(analogRead(A0)); // Joystick X
+  Serial.print(analogRead(A1)); // Joystick X
   Serial.print(",");
-  Serial.print(analogRead(A1)); // Joystick Y
+  Serial.print(analogRead(A0)); // Joystick Y
   Serial.print(",");
   Serial.print(digitalRead(8)); // Joystick Button
   Serial.print(",");
