@@ -24,5 +24,4 @@ void loop() {
   Serial.print(analogRead(A4)); // Break Angle
   Serial.print(",");
   Serial.println(analogRead(A5)); // Accelerator Angle
-  delay(20);
 }
