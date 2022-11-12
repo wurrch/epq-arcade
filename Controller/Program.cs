@@ -268,24 +268,24 @@ namespace Controller
                     arduinoRawString = arduinoRawLine.Split(',');
                     arduinoRawInt = Array.ConvertAll(arduinoRawString, s => int.Parse(s));
 
-                    // Primary Button = X Button
+                    // Primary Button = A Button
                     if (arduinoRawInt[0] == 0)
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.A, true);
+                    }
+                    else
+                    {
+                        virtualX360.SetButtonState(Xbox360Button.A, false);
+                    }
+
+                    // Secondary Button = X Button
+                    if (arduinoRawInt[1] == 0)
                     {
                         virtualX360.SetButtonState(Xbox360Button.X, true);
                     }
                     else
                     {
                         virtualX360.SetButtonState(Xbox360Button.X, false);
-                    }
-
-                    // Secondary Button = Y Button
-                    if (arduinoRawInt[1] == 0)
-                    {
-                        virtualX360.SetButtonState(Xbox360Button.Y, true);
-                    }
-                    else
-                    {
-                        virtualX360.SetButtonState(Xbox360Button.Y, false);
                     }
 
                     // Joystick Button = Left Bumper, Right Bumper and Left Thumbstick (TURNS ON LAN MODE)
@@ -340,14 +340,14 @@ namespace Controller
                     mappedWheelValue = Convert.ToInt16(Map(arduinoRawInt[5], 0, 1023, -32768, 32767));
                     virtualX360.SetAxisValue(Xbox360Axis.LeftThumbX, mappedWheelValue);
 
-                    // Clutch = Right Bumper    If the clutch value is greater than or equal to 800 then pull the right bumper
+                    // Clutch = Left Bumper    If the clutch value is greater than or equal to 800 then pull the right bumper
                     if (arduinoRawInt[6] >= 800)
                     {
-                        virtualX360.SetButtonState(Xbox360Button.RightShoulder, true);
+                        virtualX360.SetButtonState(Xbox360Button.LeftShoulder, true);
                     }
                     else
                     {
-                        virtualX360.SetButtonState(Xbox360Button.RightShoulder, false);
+                        virtualX360.SetButtonState(Xbox360Button.LeftShoulder, false);
                     }
 
                     // Break = Left Trigger
